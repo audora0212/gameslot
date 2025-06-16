@@ -6,12 +6,14 @@ import com.example.scheduler.dto.AuthDto;
 import com.example.scheduler.repository.UserRepository;
 import com.example.scheduler.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,10 @@ public class AuthService {
 
     public void signup(AuthDto.SignupRequest req) {
         if (userRepo.existsByUsername(req.getUsername())) {
-            throw new RuntimeException("Username already in use");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "이미 사용 중인 아이디입니다"
+            );
         }
         User user = User.builder()
                 .username(req.getUsername())

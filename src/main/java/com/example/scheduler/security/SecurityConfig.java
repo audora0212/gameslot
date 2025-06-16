@@ -46,7 +46,7 @@ public class SecurityConfig {
 
                 // 엔드포인트별 인가 규칙
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/error").permitAll()
                         .anyRequest().authenticated()
                 )
 

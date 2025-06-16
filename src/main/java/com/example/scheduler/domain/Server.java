@@ -1,8 +1,8 @@
-// domain/Server.java
 package com.example.scheduler.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalTime;
 import java.util.Set;
 
 @Entity
@@ -26,4 +26,7 @@ public class Server {
 
     @OneToMany(mappedBy = "server", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TimetableEntry> entries;
+
+    @Column(nullable = false)
+    private LocalTime resetTime; // 초기화 시간 추가
 }

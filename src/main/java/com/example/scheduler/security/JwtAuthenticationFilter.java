@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
         String path = request.getServletPath();
         // 인증이 필요 없는 엔드포인트 (/api/auth/**)는 필터링하지 않음
-        if (path.startsWith("/api/auth/")) {
+        if (path.startsWith("/api/auth/**")) {
             chain.doFilter(request, response);
             return;
         }
