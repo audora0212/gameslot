@@ -8,6 +8,7 @@ import com.example.scheduler.dto.TimetableDto;
 import com.example.scheduler.repository.ServerRepository;
 import com.example.scheduler.repository.TimetableEntryRepository;
 import com.example.scheduler.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,14 +26,22 @@ public class TimetableService {
     private final ServerRepository serverRepo;
     private final UserRepository userRepo;
 
+    @Transactional
     public TimetableDto.EntryResponse add(TimetableDto.EntryRequest req) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepo.findByUsername(username).orElseThrow();
         Server srv = serverRepo.findById(req.getServerId()).orElseThrow();
+
+        // 이미 기록이 있으면 삭제(덮어쓰기)
+        Optional<TimetableEntry> existing = entryRepo.findByServerAndUser(srv, user);
+        existing.ifPresent(entryRepo::delete);
+
         TimetableEntry e = TimetableEntry.builder()
-                .server(srv).user(user)
+                .server(srv)
+                .user(user)
                 .slot(req.getSlot().truncatedTo(ChronoUnit.MINUTES))
-                .game(req.getGame()).build();
+                .game(req.getGame())
+                .build();
         entryRepo.save(e);
         return toResp(e);
     }
