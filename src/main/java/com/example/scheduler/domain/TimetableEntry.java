@@ -1,4 +1,3 @@
-// domain/TimetableEntry.java
 package com.example.scheduler.domain;
 
 import jakarta.persistence.*;
@@ -8,7 +7,8 @@ import java.time.LocalDateTime;
 @Entity
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class TimetableEntry {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false)
@@ -22,6 +22,11 @@ public class TimetableEntry {
     @Column(nullable = false)
     private LocalDateTime slot;
 
-    @Column(nullable = false)
-    private String game;
+    @ManyToOne
+    @JoinColumn(name = "default_game_id")
+    private DefaultGame defaultGame;
+
+    @ManyToOne
+    @JoinColumn(name = "custom_game_id")
+    private CustomGame customGame;
 }
