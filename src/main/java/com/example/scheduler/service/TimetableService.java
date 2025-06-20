@@ -34,10 +34,7 @@ public class TimetableService {
         Server srv = serverRepo.findById(req.getServerId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        entryRepo.findByServerAndSlot(srv, req.getSlot().truncatedTo(ChronoUnit.MINUTES))
-                .stream()
-                .filter(e -> e.getUser().getId().equals(user.getId()))
-                .findFirst()
+        entryRepo.findByServerAndUser(srv, user)
                 .ifPresent(entryRepo::delete);
 
         TimetableEntry e = TimetableEntry.builder()

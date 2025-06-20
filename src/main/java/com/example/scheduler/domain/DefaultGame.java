@@ -8,8 +8,8 @@ import lombok.*;
 public class DefaultGame {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; //기본 게임 아이디
 
     @Column(nullable = false, unique = true)
-    private String name;
+    private String name; //기본 게임 이름
 }
