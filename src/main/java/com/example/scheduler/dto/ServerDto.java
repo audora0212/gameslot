@@ -1,20 +1,43 @@
+// dto/ServerDto.java
 package com.example.scheduler.dto;
 
 import lombok.*;
+
 import java.time.LocalTime;
 import java.util.Set;
 
 public class ServerDto {
+
+    /* ---------- 요청용 DTO ---------- */
+
     @Data
     public static class CreateRequest {
         private String name;
-        private LocalTime resetTime; // 생성 시 초기화 시간
+        private LocalTime resetTime;
     }
 
     @Data
     public static class UpdateResetTimeRequest {
-        private LocalTime resetTime; // 변경할 초기화 시간
+        private LocalTime resetTime;
     }
+
+    @Data                // 서버 이름 변경
+    public static class UpdateNameRequest {
+        private String name;
+    }
+
+    @Data                // 멤버 강퇴
+    public static class KickRequest {
+        private Long userId;
+    }
+
+    @Data                // 관리자 임명/해제
+    public static class AdminRequest {
+        private Long userId;
+        private boolean grant;   // true: 임명, false: 해제
+    }
+
+    /* ---------- 응답용 DTO ---------- */
 
     @Data
     @AllArgsConstructor
@@ -23,6 +46,7 @@ public class ServerDto {
         private String name;
         private String owner;
         private Set<String> members;
-        private LocalTime resetTime; // 응답에 초기화 시간 포함
+        private Set<String> admins;     // ⭐ 추가
+        private LocalTime resetTime;
     }
 }

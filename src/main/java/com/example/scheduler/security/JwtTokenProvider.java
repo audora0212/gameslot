@@ -1,9 +1,11 @@
 package com.example.scheduler.security;
 
+import com.example.scheduler.repository.BlacklistedTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,7 @@ import java.security.Key;
 import java.util.Date;
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
@@ -18,6 +21,8 @@ public class JwtTokenProvider {
 
     @Value("${jwt.expiration-ms}")
     private long validityInMs;
+
+    private final BlacklistedTokenRepository blacklistRepo;
 
     private Key key;
 
@@ -27,36 +32,37 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /* ---------- 발행 ---------- */
     public String createToken(String username) {
-        Claims claims = Jwts.claims().setSubject(username);
-        Date now = new Date();
+        Date now    = new Date();
         Date expiry = new Date(now.getTime() + validityInMs);
 
         return Jwts.builder()
-                .setClaims(claims)
+                .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
-                // Key 객체와 알고리즘을 함께 넘깁니다.
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    /* ---------- 파싱 유틸 ---------- */
     public String getUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return parser().parseClaimsJws(token).getBody().getSubject();
     }
 
+    public Date getExpiry(String token) {
+        return parser().parseClaimsJws(token).getBody().getExpiration();
+    }
+
+    private JwtParser parser() {
+        return Jwts.parserBuilder().setSigningKey(key).build();
+    }
+
+    /* ---------- 검증 ---------- */
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
+            parser().parseClaimsJws(token);            // 서명·만료 검사
+            return !blacklistRepo.existsByToken(token); // 블랙리스트 검사
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
