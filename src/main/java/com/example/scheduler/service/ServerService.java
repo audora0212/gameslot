@@ -7,6 +7,8 @@ import com.example.scheduler.dto.ServerDto;
 import com.example.scheduler.repository.ServerRepository;
 import com.example.scheduler.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,23 @@ public class ServerService {
     private final UserRepository userRepo;
 
     /* ---------- 생성 / 참가 ---------- */
+    /** 내가 참여한 서버들만 조회 */
+    public List<ServerDto.Response> listMine() {
+        User me = currentUser();
+        return serverRepo.findByMembersContains(me).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 
+    public List<ServerDto.Response> search(String q, int page, int size) {
+        Page<Server> pg = serverRepo.findByNameContainingIgnoreCase(
+                q == null ? "" : q,
+                PageRequest.of(page, size)
+        );
+        return pg.getContent().stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
     public ServerDto.Response create(ServerDto.CreateRequest req) {
         User owner = currentUser();
 

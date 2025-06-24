@@ -18,6 +18,22 @@ public class ServerController {
 
     /* ---------- 생성·참가 ---------- */
 
+    // 내가 속한 서버들
+    @GetMapping("/mine")
+    public ResponseEntity<List<ServerDto.Response>> listMine() {
+        return ResponseEntity.ok(serverService.listMine());
+    }
+
+    // 서버 검색 (페이징)
+    @GetMapping("/search")
+    public ResponseEntity<List<ServerDto.Response>> search(
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(serverService.search(q, page, size));
+    }
+
     @PostMapping
     public ResponseEntity<ServerDto.Response> create(@RequestBody ServerDto.CreateRequest req) {
         return ResponseEntity.ok(serverService.create(req));
