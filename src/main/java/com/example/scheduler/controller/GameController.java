@@ -46,4 +46,12 @@ public class GameController {
         gameService.deleteCustomGame(serverId, gameId);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/servers/{serverId}/custom-games/{gameId}/scheduled-users")
+    public ResponseEntity<GameDto.ScheduledUserListResponse> getScheduledUsers(
+            @PathVariable Long serverId,
+            @PathVariable Long gameId
+    ) {
+        return ResponseEntity.ok(gameService.listScheduledUsers(serverId, gameId));
+    }
+
 }

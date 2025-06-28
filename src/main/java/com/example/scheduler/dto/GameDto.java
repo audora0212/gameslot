@@ -39,4 +39,16 @@ public class GameDto {
     public static class CustomGameListResponse {
         private List<CustomGameResponse> customGames;
     }
+
+    @Data
+    @AllArgsConstructor
+    public static class ScheduledUserResponse {
+        private String username;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class ScheduledUserListResponse {
+        private List<ScheduledUserResponse> users;
+    }
 }
