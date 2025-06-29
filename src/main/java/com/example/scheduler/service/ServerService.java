@@ -177,12 +177,20 @@ public class ServerService {
     }
 
     private ServerDto.Response toDto(Server s) {
+        List<ServerDto.MemberInfo> mems = s.getMembers().stream()
+                .map(u -> new ServerDto.MemberInfo(u.getId(), u.getUsername()))
+                .collect(Collectors.toList());
+
+        List<ServerDto.MemberInfo> adms = s.getAdmins().stream()
+                .map(u -> new ServerDto.MemberInfo(u.getId(), u.getUsername()))
+                .collect(Collectors.toList());
+
         return new ServerDto.Response(
                 s.getId(),
                 s.getName(),
                 s.getOwner().getUsername(),
-                s.getMembers().stream().map(User::getUsername).collect(Collectors.toSet()),
-                s.getAdmins().stream().map(User::getUsername).collect(Collectors.toSet()),
+                mems,
+                adms,
                 s.getResetTime()
         );
     }

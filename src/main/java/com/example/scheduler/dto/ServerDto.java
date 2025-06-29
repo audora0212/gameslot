@@ -4,6 +4,7 @@ package com.example.scheduler.dto;
 import lombok.*;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 public class ServerDto {
@@ -45,8 +46,14 @@ public class ServerDto {
         private Long id;
         private String name;
         private String owner;
-        private Set<String> members;
-        private Set<String> admins;     // ⭐ 추가
+        private List<MemberInfo> members;
+        private List<MemberInfo> admins;
         private LocalTime resetTime;
+    }
+
+    @Data @AllArgsConstructor
+    public static class MemberInfo {
+        private Long id;
+        private String username;
     }
 }
