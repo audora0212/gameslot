@@ -32,6 +32,10 @@ public class DiscordOAuth2UserService
         String username  = oauthUser.getAttribute("username");
         String email     = oauthUser.getAttribute("email");
 
+        System.out.println("id : "+discordId);
+        System.out.println("username : "+username);
+        System.out.println("email : "+email);
+
         // DB에 사용자 조회 또는 생성
         User user = userRepo.findByDiscordId(discordId)
                 .orElseGet(() -> {
