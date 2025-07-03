@@ -20,6 +20,7 @@ public class AuthController {
     /* ---------- 회원가입 ---------- */
     @PostMapping("/signup")
     public ResponseEntity<AuthDto.SignupResponse> signup(@RequestBody AuthDto.SignupRequest req) {
+        System.out.println(req);
         authService.signup(req);
         return ResponseEntity.ok(new AuthDto.SignupResponse("회원가입이 완료되었습니다"));
     }

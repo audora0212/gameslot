@@ -14,6 +14,9 @@ public class User { // Discord OAuth 추가 이후 필요한 항목들 추가
     private String username; //유저 이름
 
     @Column(nullable = true)
+    private String nickname; //표기될 이름
+
+    @Column(nullable = true)
     private String password; //비밀번호
 
     @Column(unique=true)

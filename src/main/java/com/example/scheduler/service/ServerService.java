@@ -208,15 +208,15 @@ public class ServerService {
 
     private ServerDto.Response toDto(Server s) {
         List<ServerDto.MemberInfo> mems = s.getMembers().stream()
-                .map(u -> new ServerDto.MemberInfo(u.getId(), u.getUsername()))
+                .map(u -> new ServerDto.MemberInfo(u.getId(), u.getNickname()))
                 .collect(Collectors.toList());
         List<ServerDto.MemberInfo> adms = s.getAdmins().stream()
-                .map(u -> new ServerDto.MemberInfo(u.getId(), u.getUsername()))
+                .map(u -> new ServerDto.MemberInfo(u.getId(), u.getNickname()))
                 .collect(Collectors.toList());
         return new ServerDto.Response(
                 s.getId(),
                 s.getName(),
-                s.getOwner().getUsername(),
+                s.getOwner().getNickname(),
                 mems,
                 adms,
                 s.getResetTime()

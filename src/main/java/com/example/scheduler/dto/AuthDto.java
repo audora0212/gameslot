@@ -7,6 +7,7 @@ public class AuthDto {
     @Data public static class SignupRequest { //회원가입 요청
         private String username;
         private String password;
+        private String nickname;
     }
     @Data @AllArgsConstructor public static class SignupResponse { //회원가입 성공여부
         private String message;

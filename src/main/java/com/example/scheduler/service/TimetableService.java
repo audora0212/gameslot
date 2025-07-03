@@ -133,7 +133,7 @@ public class TimetableService {
     private TimetableDto.EntryResponse toResp(TimetableEntry e) {
         TimetableDto.EntryResponse r = new TimetableDto.EntryResponse();
         r.setId(e.getId());
-        r.setUser(e.getUser().getUsername());
+        r.setUser(e.getUser().getNickname());
         r.setSlot(e.getSlot());
         if (e.getCustomGame() != null) {
             r.setGameId(e.getCustomGame().getId());

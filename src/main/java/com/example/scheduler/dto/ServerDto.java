@@ -54,6 +54,6 @@ public class ServerDto {
     @Data @AllArgsConstructor
     public static class MemberInfo {
         private Long id;
-        private String username;
+        private String nickname;
     }
 }

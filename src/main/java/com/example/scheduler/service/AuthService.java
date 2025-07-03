@@ -37,6 +37,7 @@ public class AuthService {
         }
         User user = User.builder()
                 .username(req.getUsername())
+                .nickname(req.getNickname())
                 .password(encoder.encode(req.getPassword()))
                 .build();
         userRepo.save(user);
