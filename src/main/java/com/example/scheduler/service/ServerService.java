@@ -216,6 +216,7 @@ public class ServerService {
         return new ServerDto.Response(
                 s.getId(),
                 s.getName(),
+                s.getOwner().getId(),
                 s.getOwner().getNickname(),
                 mems,
                 adms,

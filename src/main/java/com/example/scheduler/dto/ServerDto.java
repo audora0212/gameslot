@@ -45,6 +45,7 @@ public class ServerDto {
     public static class Response {
         private Long id;
         private String name;
+        private Long ownerId;
         private String owner;
         private List<MemberInfo> members;
         private List<MemberInfo> admins;
