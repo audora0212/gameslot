@@ -1,11 +1,14 @@
-// service/ServerService.java
 package com.example.scheduler.service;
 
+import com.example.scheduler.domain.CustomGame;
 import com.example.scheduler.domain.Server;
 import com.example.scheduler.domain.User;
 import com.example.scheduler.dto.ServerDto;
+import com.example.scheduler.repository.CustomGameRepository;
 import com.example.scheduler.repository.ServerRepository;
+import com.example.scheduler.repository.TimetableEntryRepository;
 import com.example.scheduler.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,9 +27,11 @@ public class ServerService {
 
     private final ServerRepository serverRepo;
     private final UserRepository userRepo;
+    private final TimetableEntryRepository entryRepo;
+    private final CustomGameRepository customGameRepo;
 
     /* ---------- 생성 / 참가 ---------- */
-    /** 내가 참여한 서버들만 조회 */
+
     public List<ServerDto.Response> listMine() {
         User me = currentUser();
         return serverRepo.findByMembersContains(me).stream()
@@ -43,6 +48,7 @@ public class ServerService {
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
+
     public ServerDto.Response create(ServerDto.CreateRequest req) {
         User owner = currentUser();
 
@@ -50,7 +56,7 @@ public class ServerService {
                 .name(req.getName())
                 .owner(owner)
                 .members(Set.of(owner))
-                .admins(Set.of(owner))          // ⭐ owner → admins
+                .admins(Set.of(owner))
                 .resetTime(req.getResetTime())
                 .build();
 
@@ -81,7 +87,7 @@ public class ServerService {
         return toDto(srv);
     }
 
-    public ServerDto.Response rename(Long id, ServerDto.UpdateNameRequest req) { // ⭐ 서버 이름 변경
+    public ServerDto.Response rename(Long id, ServerDto.UpdateNameRequest req) {
         Server srv = fetch(id);
         assertAdmin(srv, currentUser());
 
@@ -120,9 +126,9 @@ public class ServerService {
         if (!srv.getMembers().contains(target))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "서버 멤버가 아닙니다");
 
-        if (req.isGrant()) {                 // 임명
+        if (req.isGrant()) {
             srv.getAdmins().add(target);
-        } else {                             // 해제
+        } else {
             if (srv.getOwner().equals(target))
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "서버장은 항상 관리자입니다");
             srv.getAdmins().remove(target);
@@ -131,14 +137,38 @@ public class ServerService {
         return toDto(srv);
     }
 
-    public void delete(Long id) {            // ⭐ 서버 삭제
+    /* ---------- 삭제 & 떠나기 ---------- */
+
+    @Transactional
+    public void delete(Long id) {
         Server srv = fetch(id);
         User me = currentUser();
-
-        if (!srv.getOwner().equals(me))
+        if (!srv.getOwner().equals(me)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "서버장만 삭제할 수 있습니다");
-
+        }
+        // 1) 타임테이블 엔트리 삭제
+        entryRepo.deleteAllByServer(srv);
+        // 2) 커스텀 게임 및 관련 엔트리 삭제
+        List<CustomGame> customs = customGameRepo.findByServer(srv);
+        for (CustomGame cg : customs) {
+            entryRepo.deleteAllByCustomGame(cg);
+            customGameRepo.delete(cg);
+        }
+        // 3) 서버 삭제
         serverRepo.delete(srv);
+    }
+
+    @Transactional
+    public void leave(Long id) {
+        Server srv = fetch(id);
+        User me = currentUser();
+        if (srv.getOwner().equals(me)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "서버장은 떠날 수 없습니다");
+        }
+        entryRepo.deleteAllByServerAndUser(srv, me);
+        srv.getMembers().remove(me);
+        srv.getAdmins().remove(me);
+        serverRepo.save(srv);
     }
 
     /* ---------- 조회 ---------- */
@@ -158,7 +188,7 @@ public class ServerService {
         return toDto(srv);
     }
 
-    /* ---------- 내부 도우미 ---------- */
+    /* ---------- 내부 헬퍼 ---------- */
 
     private User currentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -167,7 +197,7 @@ public class ServerService {
 
     private Server fetch(Long id) {
         return serverRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "서버를 찾을 수 없습니다"));
     }
 
     private void assertAdmin(Server srv, User user) {
@@ -180,11 +210,9 @@ public class ServerService {
         List<ServerDto.MemberInfo> mems = s.getMembers().stream()
                 .map(u -> new ServerDto.MemberInfo(u.getId(), u.getUsername()))
                 .collect(Collectors.toList());
-
         List<ServerDto.MemberInfo> adms = s.getAdmins().stream()
                 .map(u -> new ServerDto.MemberInfo(u.getId(), u.getUsername()))
                 .collect(Collectors.toList());
-
         return new ServerDto.Response(
                 s.getId(),
                 s.getName(),

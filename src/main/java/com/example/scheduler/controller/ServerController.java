@@ -1,4 +1,3 @@
-// controller/ServerController.java
 package com.example.scheduler.controller;
 
 import com.example.scheduler.dto.ServerDto;
@@ -16,15 +15,11 @@ public class ServerController {
 
     private final ServerService serverService;
 
-    /* ---------- 생성·참가 ---------- */
-
-    // 내가 속한 서버들
     @GetMapping("/mine")
     public ResponseEntity<List<ServerDto.Response>> listMine() {
         return ResponseEntity.ok(serverService.listMine());
     }
 
-    // 서버 검색 (페이징)
     @GetMapping("/search")
     public ResponseEntity<List<ServerDto.Response>> search(
             @RequestParam(required = false) String q,
@@ -44,8 +39,6 @@ public class ServerController {
         return ResponseEntity.ok(serverService.join(id));
     }
 
-    /* ---------- 일반 수정 ---------- */
-
     @PutMapping("/{id}/reset-time")
     public ResponseEntity<ServerDto.Response> updateResetTime(
             @PathVariable Long id,
@@ -53,36 +46,40 @@ public class ServerController {
         return ResponseEntity.ok(serverService.updateResetTime(id, req));
     }
 
-    @PutMapping("/{id}/name")                           // ⭐ 서버 이름 변경
+    @PutMapping("/{id}/name")
     public ResponseEntity<ServerDto.Response> rename(
             @PathVariable Long id,
             @RequestBody ServerDto.UpdateNameRequest req) {
         return ResponseEntity.ok(serverService.rename(id, req));
     }
 
-    /* ---------- 관리자 기능 ---------- */
-
-    @PostMapping("/{id}/kick")                          // 멤버 강퇴
+    @PostMapping("/{id}/kick")
     public ResponseEntity<ServerDto.Response> kick(
             @PathVariable Long id,
             @RequestBody ServerDto.KickRequest req) {
         return ResponseEntity.ok(serverService.kick(id, req));
     }
 
-    @PostMapping("/{id}/admins")                        // 관리자 임명/해제
+    @PostMapping("/{id}/admins")
     public ResponseEntity<ServerDto.Response> updateAdmin(
             @PathVariable Long id,
             @RequestBody ServerDto.AdminRequest req) {
         return ResponseEntity.ok(serverService.updateAdmin(id, req));
     }
 
-    @DeleteMapping("/{id}")                             // 서버 삭제
+    // 서버 삭제
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         serverService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    /* ---------- 조회 ---------- */
+    // 서버 떠나기
+    @PostMapping("/{id}/leave")
+    public ResponseEntity<Void> leave(@PathVariable Long id) {
+        serverService.leave(id);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping
     public ResponseEntity<List<ServerDto.Response>> list() {

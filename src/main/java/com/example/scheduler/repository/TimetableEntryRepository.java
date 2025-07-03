@@ -23,4 +23,6 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
 
     /** 특정 CustomGame을 예약한 엔트리 전부 삭제 */
     void deleteAllByCustomGame(CustomGame customGame);
+
+    void deleteAllByServerAndUser(Server server, User user);
 }
